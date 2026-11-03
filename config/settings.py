@@ -13,6 +13,9 @@ DEBUG = os.environ.get("DEBUG", "1") == "1"
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
 
+# Used to build the full, copyable public quiz link in the admin.
+SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000" if DEBUG else "https://ceequiz.thecadlabs.com")
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

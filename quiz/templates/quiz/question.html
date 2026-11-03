@@ -15,6 +15,8 @@
      data-phase="{{ phase }}"
      data-save-url="{% url 'quiz:save_answer' code=quiz.code order=order %}"
      data-submit-url="{% url 'quiz:submit_attempt' code=quiz.code %}"
+     data-progress-url="{% url 'quiz:progress' code=quiz.code %}"
+     data-next-question-url="{% if not is_last %}{% url 'quiz:question' code=quiz.code order=order|add:'1' %}{% endif %}"
      data-locked="{% if reveal %}1{% else %}0{% endif %}">
 
   <p class="question-text">{% if LANG == 'en' %}{{ question.text_en|default:question.text_gu }}{% else %}{{ question.text_gu }}{% endif %}</p>

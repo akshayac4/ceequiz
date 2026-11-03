@@ -259,3 +259,19 @@ def submit_attempt(request, code):
 def quiz_status(request, code):
     quiz = get_object_or_404(Quiz, code=code)
     return JsonResponse({"status": quiz.status})
+
+
+def attempt_progress(request, code):
+    quiz = get_object_or_404(Quiz, code=code)
+    phase = quiz.current_phase()
+    participant = _get_participant_from_cookie(request)
+    if not participant or phase is None:
+        return JsonResponse({"error": "no active session"}, status=400)
+
+    attempt = _current_attempt(quiz, participant, phase)
+    if not attempt:
+        return JsonResponse({"error": "no active attempt"}, status=400)
+
+    total = quiz.questions.count()
+    answered = attempt.answers.count()
+    return JsonResponse({"total": total, "answered": answered, "unanswered": max(0, total - answered)})

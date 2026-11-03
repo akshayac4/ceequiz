@@ -103,8 +103,18 @@ class QuizAdmin(admin.ModelAdmin):
         if not obj.pk:
             return "-"
         from django.conf import settings
-        return format_html('<code>/q/{}/</code>', obj.code)
-    quiz_link.short_description = "Public link path"
+        url = f"{settings.SITE_URL.rstrip('/')}/q/{obj.code}/"
+        return format_html(
+            '<input type="text" readonly value="{0}" id="quiz-public-link" '
+            'style="width:360px;padding:6px;font-family:monospace;" '
+            'onclick="this.select()">'
+            '<button type="button" class="button" style="margin-left:8px" '
+            'onclick="navigator.clipboard.writeText(\'{0}\');'
+            'this.textContent=\'Copied!\';setTimeout(()=>this.textContent=\'Copy link\',1500);">'
+            'Copy link</button>',
+            url,
+        )
+    quiz_link.short_description = "Public link (same link for pre and post test)"
 
     def status_actions(self, obj):
         if not obj.pk:

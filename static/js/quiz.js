@@ -103,17 +103,22 @@
               if (area) {
                 const total = parseInt(card.getAttribute("data-total"), 10);
                 const order = parseInt(card.getAttribute("data-order"), 10);
-                if (order >= total) {
-                  const finishBtn = document.createElement("button");
-                  finishBtn.type = "button";
-                  finishBtn.id = "finish-btn";
-                  finishBtn.className = "btn-primary";
-                  finishBtn.textContent = lang === "en" ? "Finish" : "પૂર્ણ કરો";
-                  finishBtn.setAttribute("data-submit-url", card.getAttribute("data-submit-url"));
-                  area.appendChild(finishBtn);
-                  bindFinish(finishBtn);
+                const isLast = order >= total;
+                const advanceBtn = document.createElement("button");
+                advanceBtn.type = "button";
+                advanceBtn.id = isLast ? "finish-btn" : "next-btn";
+                advanceBtn.className = "btn-primary";
+                advanceBtn.textContent = isLast
+                  ? (lang === "en" ? "Finish" : "પૂર્ણ કરો")
+                  : (lang === "en" ? "Next" : "આગળ");
+                area.appendChild(advanceBtn);
+                if (isLast) {
+                  advanceBtn.setAttribute("data-submit-url", card.getAttribute("data-submit-url"));
+                  bindFinish(advanceBtn);
                 } else {
-                  window.location.href = window.location.pathname.replace(/\/question\/\d+\/?$/, "/question/" + (order + 1) + "/");
+                  advanceBtn.addEventListener("click", function () {
+                    window.location.href = card.getAttribute("data-next-question-url");
+                  });
                 }
               }
             }
@@ -125,20 +130,17 @@
     const submitBtn = document.getElementById("submit-btn");
     if (submitBtn) {
       submitBtn.addEventListener("click", function () {
-        const total = parseInt(submitBtn.getAttribute("data-total"), 10);
-        const answered = card.querySelectorAll(".option-selected").length;
-        // best-effort local count; server is authoritative for scoring
-        const unanswered = Math.max(0, total - countAnsweredHint());
-        if (window.confirm(confirmText(lang, unanswered))) {
-          postForm(submitBtn.getAttribute("data-submit-url")).then(function () {
-            window.location.reload();
+        fetch(card.getAttribute("data-progress-url"))
+          .then(function (resp) { return resp.json(); })
+          .then(function (progress) {
+            const unanswered = progress.unanswered || 0;
+            if (window.confirm(confirmText(lang, unanswered))) {
+              postForm(submitBtn.getAttribute("data-submit-url")).then(function () {
+                window.location.reload();
+              });
+            }
           });
-        }
       });
-    }
-
-    function countAnsweredHint() {
-      return document.querySelectorAll(".option-selected").length;
     }
 
     function bindFinish(btn) {
