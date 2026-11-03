@@ -10,7 +10,7 @@
 <body>
 <header class="site-header">
   <div class="brand">
-    <img src="{% static 'brand/cee-logo.png' %}" alt="CEE" class="cee-logo" onerror="this.style.display='none'">
+    {% if cee_logo_exists %}<img src="{% static 'brand/cee-logo.png' %}" alt="CEE" class="cee-logo">{% endif %}
     <span class="quiz-title">{% if LANG == 'en' %}{{ quiz.title_en|default:quiz.title_gu }}{% else %}{{ quiz.title_gu }}{% endif %}</span>
   </div>
   <div class="lang-toggle">

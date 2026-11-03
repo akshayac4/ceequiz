@@ -51,6 +51,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "quiz.context_processors.language",
+                "quiz.context_processors.branding",
             ],
         },
     },
@@ -102,6 +103,12 @@ STORAGES = {
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# The CEE logo (static/brand/cee-logo.png) isn't supplied yet — without this,
+# WhiteNoise's manifest storage raises a hard 500 for any {% static %} tag
+# pointing at a file that doesn't exist, instead of just leaving a broken
+# image. Keep this off once the real logo file is committed.
+WHITENOISE_MANIFEST_STRICT = False
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
