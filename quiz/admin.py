@@ -110,7 +110,6 @@ class QuizAdmin(admin.ModelAdmin):
         if not obj.pk:
             return "Save the quiz first."
         buttons = []
-        base = reverse("admin:quiz_quiz_change", args=[obj.pk])
         if obj.can_open_pre():
             buttons.append(("open_pre", "Open pre-test"))
         if obj.can_close_pre():
@@ -125,9 +124,10 @@ class QuizAdmin(admin.ModelAdmin):
             warn = ""
         html = f'<p><strong>Current status:</strong> {obj.get_status_display()}</p>' + warn
         for action, label in buttons:
+            url = reverse("admin:quiz_quiz_transition", args=[obj.pk, action])
             html += (
                 f'<a class="button" style="margin-right:8px" '
-                f'href="{base}transition/{action}/">{label}</a>'
+                f'href="{url}">{label}</a>'
             )
         return format_html(html)
     status_actions.short_description = "Lifecycle"
