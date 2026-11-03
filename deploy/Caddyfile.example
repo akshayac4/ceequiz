@@ -1,0 +1,7 @@
+# Add this block to the shared Caddy instance at /opt/caddy (see the
+# "My VPS" project overview). Caddy must already be on the external
+# `proxy` Docker network that ceequiz-web also joins.
+
+ceequiz.thecadlabs.com {
+	reverse_proxy ceequiz-web:8000
+}

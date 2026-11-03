@@ -1,0 +1,67 @@
+{% extends "quiz/base.html" %}
+{% load static %}
+{% block content %}
+<div class="quiz-header-bar">
+  <span class="timer" id="timer" data-remaining="{% if remaining_seconds is not None %}{{ remaining_seconds }}{% endif %}">
+    {% if remaining_seconds is not None %}--:--{% endif %}
+  </span>
+  <span class="progress">{{ order }}/{{ total }}</span>
+</div>
+
+<div class="question-card"
+     id="question-card"
+     data-order="{{ order }}"
+     data-total="{{ total }}"
+     data-phase="{{ phase }}"
+     data-save-url="{% url 'quiz:save_answer' code=quiz.code order=order %}"
+     data-submit-url="{% url 'quiz:submit_attempt' code=quiz.code %}"
+     data-locked="{% if reveal %}1{% else %}0{% endif %}">
+
+  <p class="question-text">{% if LANG == 'en' %}{{ question.text_en|default:question.text_gu }}{% else %}{{ question.text_gu }}{% endif %}</p>
+
+  <div class="options">
+    {% for opt in options %}
+    <button type="button"
+            class="option-btn
+              {% if reveal %}
+                {% if opt.label == reveal.correct_label %}option-correct{% endif %}
+                {% if opt.label == reveal.selected_label and not reveal.is_correct %}option-wrong{% endif %}
+              {% elif opt.label == selected_label %}option-selected{% endif %}"
+            data-label="{{ opt.label }}"
+            {% if reveal %}disabled{% endif %}>
+      <span class="option-label">{{ opt.label }}</span>
+      <span class="option-text">{% if LANG == 'en' %}{{ opt.text_en|default:opt.text_gu }}{% else %}{{ opt.text_gu }}{% endif %}</span>
+    </button>
+    {% endfor %}
+  </div>
+
+  <div class="nav-row">
+    {% if phase == 'pre' %}
+      {% if has_prev %}<a href="{% url 'quiz:question' code=quiz.code order=order|add:'-1' %}" class="btn-secondary">{% if LANG == 'en' %}Previous{% else %}પાછળ{% endif %}</a>{% endif %}
+      {% if has_next %}<a href="{% url 'quiz:question' code=quiz.code order=order|add:'1' %}" class="btn-secondary">{% if LANG == 'en' %}Next{% else %}આગળ{% endif %}</a>{% endif %}
+      {% if is_last %}
+      <button type="button" id="submit-btn" class="btn-primary" data-submit-url="{% url 'quiz:submit_attempt' code=quiz.code %}" data-total="{{ total }}">
+        {% if LANG == 'en' %}Submit{% else %}સબમિટ કરો{% endif %}
+      </button>
+      {% endif %}
+    {% else %}
+      <div id="post-next-area">
+        {% if reveal %}
+          {% if is_last %}
+          <button type="button" id="finish-btn" class="btn-primary" data-submit-url="{% url 'quiz:submit_attempt' code=quiz.code %}">
+            {% if LANG == 'en' %}Finish{% else %}પૂર્ણ કરો{% endif %}
+          </button>
+          {% else %}
+          <a href="{% url 'quiz:question' code=quiz.code order=order|add:'1' %}" class="btn-primary">
+            {% if LANG == 'en' %}Next{% else %}આગળ{% endif %}
+          </a>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script src="{% static 'js/quiz.js' %}"></script>
+<script>CEEQuiz.initQuestion(document.getElementById('question-card'));</script>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>Upload questions — {{ quiz }}</h1>
+<p>Columns required: order, question_gu, question_en, A_gu, A_en, B_gu, B_en, C_gu, C_en, D_gu, D_en, correct (A/B/C/D).</p>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <input type="file" name="file" accept=".xlsx" required>
+  <button type="submit" class="button default">Upload</button>
+</form>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "quiz/base.html" %}
+{% block content %}
+<div class="status-card">
+  {% if LANG == 'en' %}
+    <h1>This test has ended</h1>
+    <p>Thank you for your interest. This link is no longer active.</p>
+  {% else %}
+    <h1>આ કસોટી પૂર્ણ થઈ ગઈ છે</h1>
+    <p>તમારા રસ બદલ આભાર. આ લિંક હવે સક્રિય નથી.</p>
+  {% endif %}
+</div>
+{% endblock %}

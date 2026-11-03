@@ -1,0 +1,19 @@
+{% extends "quiz/base.html" %}
+{% block content %}
+<div class="status-card">
+  {% if LANG == 'en' %}
+    <h1>Continuing as {{ participant.name }} · {{ participant.school_name }}</h1>
+  {% else %}
+    <h1>{{ participant.name }} · {{ participant.school_name }} તરીકે ચાલુ રાખો</h1>
+  {% endif %}
+  <form method="post" action="{% url 'quiz:start_attempt' code=quiz.code %}">
+    {% csrf_token %}
+    <button type="submit" class="btn-primary">
+      {% if LANG == 'en' %}Start{% else %}શરૂ કરો{% endif %}
+    </button>
+  </form>
+  <a href="{% url 'quiz:not_you' code=quiz.code %}" class="not-you-link">
+    {% if LANG == 'en' %}Not you?{% else %}આ તમે નથી?{% endif %}
+  </a>
+</div>
+{% endblock %}

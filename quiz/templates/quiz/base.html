@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANG }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>{% block title %}{{ quiz.title_gu }}{% endblock %}</title>
+<link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    <img src="{% static 'brand/cee-logo.png' %}" alt="CEE" class="cee-logo" onerror="this.style.display='none'">
+    <span class="quiz-title">{% if LANG == 'en' %}{{ quiz.title_en|default:quiz.title_gu }}{% else %}{{ quiz.title_gu }}{% endif %}</span>
+  </div>
+  <div class="lang-toggle">
+    <a href="{% url 'quiz:set_language' lang='gu' %}?next={{ request.path }}" class="{% if LANG == 'gu' %}active{% endif %}">ગુજરાતી</a>
+    <span>/</span>
+    <a href="{% url 'quiz:set_language' lang='en' %}?next={{ request.path }}" class="{% if LANG == 'en' %}active{% endif %}">English</a>
+  </div>
+</header>
+
+<main class="site-main">
+{% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <p class="org-footer">{% if LANG == 'en' %}Organised by Centre for Environment Education (CEE){% else %}Centre for Environment Education (CEE) દ્વારા આયોજિત{% endif %}</p>
+  {% if show_cadlabs_badge %}
+  <a href="https://www.thecadlabs.com/" target="_blank" rel="noopener" class="cadlabs-badge">
+    <img src="{% static 'brand/cadlabs-icon.png' %}" alt="">
+    <span>CAD Labs Technology LLP</span>
+  </a>
+  {% endif %}
+</footer>
+</body>
+</html>

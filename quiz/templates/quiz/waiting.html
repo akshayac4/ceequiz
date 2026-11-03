@@ -1,0 +1,15 @@
+{% extends "quiz/base.html" %}
+{% load static %}
+{% block content %}
+<div class="status-card" id="waiting-card" data-status-url="{% url 'quiz:status' code=quiz.code %}" data-entry-url="{% url 'quiz:entry' code=quiz.code %}">
+  {% if LANG == 'en' %}
+    <h1>Post-test will open soon</h1>
+    <p>This page will refresh automatically when it opens.</p>
+  {% else %}
+    <h1>પોસ્ટ-ટેસ્ટ ટૂંક સમયમાં શરૂ થશે</h1>
+    <p>તે શરૂ થાય ત્યારે આ પાનું આપમેળે બદલાશે.</p>
+  {% endif %}
+</div>
+<script src="{% static 'js/quiz.js' %}"></script>
+<script>CEEQuiz.pollWaiting(document.getElementById('waiting-card'));</script>
+{% endblock %}

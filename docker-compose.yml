@@ -1,0 +1,43 @@
+services:
+  web:
+    build: .
+    container_name: ceequiz-web
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - media_data:/app/media
+      - static_data:/app/staticfiles
+    networks:
+      - proxy
+      - ceequiz_internal
+    depends_on:
+      - db
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+
+  db:
+    image: postgres:16-alpine
+    container_name: ceequiz-db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - ceequiz_internal
+
+volumes:
+  db_data:
+  media_data:
+  static_data:
+
+networks:
+  proxy:
+    external: true
+  ceequiz_internal:
+    internal: true

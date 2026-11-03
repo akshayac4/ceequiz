@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CEE Quiz — Reports</title>
+<link rel="stylesheet" href="{% static 'css/main.css' %}">
+<style>
+  body { font-family: "Inter", sans-serif; }
+  .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .filters select, .filters input { padding: 8px; border: 1px solid var(--border); border-radius: 6px; }
+  .cards { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+  .card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; min-width: 140px; }
+  .card .num { font-size: 24px; font-weight: 700; color: var(--cee-green); }
+  .card .label { font-size: 12px; color: #666; }
+  .charts { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 24px; }
+  .chart-box { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 16px; width: 440px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; margin-bottom: 24px; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; font-size: 14px; }
+  th a { color: var(--cee-green); text-decoration: none; }
+  .site-main { max-width: 1100px; }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand"><span class="quiz-title">CEE Quiz — Reports &amp; Dashboard</span></div>
+  <a href="{% url 'reports:export' %}?{{ request.GET.urlencode }}" class="btn-secondary">Export to Excel</a>
+</header>
+<main class="site-main">
+  <form class="filters" method="get">
+    <select name="quiz"><option value="">All quizzes</option>
+      {% for q in quizzes %}<option value="{{ q.id }}" {% if get.quiz == q.id|stringformat:"s" %}selected{% endif %}>{{ q.title_en }}</option>{% endfor %}
+    </select>
+    <select name="phase"><option value="">All phases</option>
+      <option value="pre" {% if get.phase == "pre" %}selected{% endif %}>Pre-test</option>
+      <option value="post" {% if get.phase == "post" %}selected{% endif %}>Post-test</option>
+    </select>
+    <select name="district"><option value="">All districts</option>
+      {% for d in districts %}<option value="{{ d.id }}" {% if get.district == d.id|stringformat:"s" %}selected{% endif %}>{{ d.name_en }}</option>{% endfor %}
+    </select>
+    <input type="text" name="school" placeholder="School search" value="{{ get.school }}">
+    <input type="text" name="designation" placeholder="Designation" value="{{ get.designation }}">
+    <input type="date" name="date_from" value="{{ get.date_from }}">
+    <input type="date" name="date_to" value="{{ get.date_to }}">
+    <input type="text" name="q" placeholder="Search name / mobile" value="{{ get.q }}">
+    <button type="submit" class="btn-primary">Apply</button>
+  </form>
+
+  <div class="cards">
+    <div class="card"><div class="num">{{ summary.participants }}</div><div class="label">Participants</div></div>
+    <div class="card"><div class="num">{{ summary.pre_takers }}</div><div class="label">Pre-test takers</div></div>
+    <div class="card"><div class="num">{{ summary.post_takers }}</div><div class="label">Post-test takers</div></div>
+    <div class="card"><div class="num">{{ summary.took_both }}</div><div class="label">Took both</div></div>
+    <div class="card"><div class="num">{{ summary.avg_pre|default_if_none:"—" }}%</div><div class="label">Avg pre score</div></div>
+    <div class="card"><div class="num">{{ summary.avg_post|default_if_none:"—" }}%</div><div class="label">Avg post score</div></div>
+    <div class="card"><div class="num">{{ summary.avg_gain|default_if_none:"—" }}%</div><div class="label">Avg gain</div></div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-box"><canvas id="chart-district"></canvas></div>
+    <div class="chart-box"><canvas id="chart-school"></canvas></div>
+    <div class="chart-box"><canvas id="chart-distribution"></canvas></div>
+  </div>
+
+  {% if quiz %}
+  <h3>Question-wise accuracy — {{ quiz.title_en }}</h3>
+  <table>
+    <tr><th>#</th><th>Question</th><th>Pre accuracy</th><th>Post accuracy</th></tr>
+    {% for qr in question_rows %}
+    <tr>
+      <td>{{ qr.question.order }}</td>
+      <td>{{ qr.question.text_en|default:qr.question.text_gu }}</td>
+      <td>{% if qr.pre_pct is not None %}{{ qr.pre_pct }}%{% else %}—{% endif %}</td>
+      <td>{% if qr.post_pct is not None %}{{ qr.post_pct }}%{% else %}—{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p><em>Select a quiz above to see question-wise accuracy.</em></p>
+  {% endif %}
+
+  <h3>Participants</h3>
+  <table>
+    <tr>
+      <th><a href="?{{ request.GET.urlencode }}&sort=name">Name</a></th>
+      <th>Mobile</th><th>District</th>
+      <th><a href="?{{ request.GET.urlencode }}&sort=school">School</a></th>
+      <th>Designation</th>
+      <th><a href="?{{ request.GET.urlencode }}&sort=pre_pct">Pre %</a></th>
+      <th><a href="?{{ request.GET.urlencode }}&sort=post_pct">Post %</a></th>
+      <th><a href="?{{ request.GET.urlencode }}&sort=gain">Gain</a></th>
+      <th>No pre-test</th>
+    </tr>
+    {% for r in rows %}
+    <tr>
+      <td>{{ r.participant.name }}</td>
+      <td>{{ r.participant.mobile }}</td>
+      <td>{{ r.district }}</td>
+      <td>{{ r.school }}</td>
+      <td>{{ r.designation }}</td>
+      <td>{% if r.pre_pct is not None %}{{ r.pre_pct }}%{% else %}—{% endif %}</td>
+      <td>{% if r.post_pct is not None %}{{ r.post_pct }}%{% else %}—{% endif %}</td>
+      <td>{% if r.gain is not None %}{{ r.gain }}%{% else %}—{% endif %}</td>
+      <td>{% if r.no_pre_test %}Yes{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</main>
+
+<script src="{% static 'vendor/chart.umd.min.js' %}"></script>
+<script>
+(function(){
+  const ctx1 = document.getElementById('chart-district');
+  const ctx2 = document.getElementById('chart-school');
+  const ctx3 = document.getElementById('chart-distribution');
+  new Chart(ctx1, {
+    type: 'bar',
+    data: { labels: {{ charts.district_labels|safe }},
+            datasets: [
+              { label: 'Pre %', data: {{ charts.district_pre|safe }}, backgroundColor: '#FFCC00' },
+              { label: 'Post %', data: {{ charts.district_post|safe }}, backgroundColor: '#1F5A3A' },
+            ]},
+    options: { plugins: { title: { display: true, text: 'Pre vs post — by district' } } }
+  });
+  new Chart(ctx2, {
+    type: 'bar',
+    data: { labels: {{ charts.school_labels|safe }},
+            datasets: [
+              { label: 'Pre %', data: {{ charts.school_pre|safe }}, backgroundColor: '#FFCC00' },
+              { label: 'Post %', data: {{ charts.school_post|safe }}, backgroundColor: '#1F5A3A' },
+            ]},
+    options: { plugins: { title: { display: true, text: 'Pre vs post — bottom/top schools' } } }
+  });
+  new Chart(ctx3, {
+    type: 'bar',
+    data: { labels: ['0-20', '21-40', '41-60', '61-80', '81-100'],
+            datasets: [{ label: 'Attempts', data: {{ charts.distribution_bins|safe }}, backgroundColor: '#1F5A3A' }]},
+    options: { plugins: { title: { display: true, text: 'Score distribution' } } }
+  });
+})();
+</script>
+</body>
+</html>

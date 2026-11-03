@@ -1,0 +1,172 @@
+@font-face {
+  font-family: "Inter";
+  src: url("/static/fonts/inter-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans Gujarati";
+  src: url("/static/fonts/notosansgujarati-var-gu.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0A80-0AFF, U+200C-200D, U+25CC;
+}
+@font-face {
+  font-family: "Noto Sans Gujarati";
+  src: url("/static/fonts/notosansgujarati-var-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0000-00FF;
+}
+
+:root {
+  --cee-yellow: #FFCC00;
+  --cee-green: #1F5A3A;
+  --bg: #FFFBF0;
+  --text: #22291F;
+  --correct: #1F7A3A;
+  --wrong: #B3261E;
+  --card-bg: #FFFFFF;
+  --border: #E7DFC2;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Noto Sans Gujarati", "Inter", sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+html[lang="en"] body { font-family: "Inter", "Noto Sans Gujarati", sans-serif; }
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border-bottom: 3px solid var(--cee-yellow);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.cee-logo { height: 36px; width: auto; }
+.quiz-title { font-weight: 600; color: var(--cee-green); font-size: 15px; }
+
+.lang-toggle { font-size: 14px; white-space: nowrap; }
+.lang-toggle a { color: var(--text); text-decoration: none; opacity: 0.6; }
+.lang-toggle a.active { opacity: 1; font-weight: 700; color: var(--cee-green); }
+
+.site-main { padding: 16px; max-width: 640px; margin: 0 auto; min-height: calc(100vh - 160px); }
+
+.site-footer { text-align: center; padding: 20px 16px 32px; font-size: 13px; color: #6b7263; }
+.org-footer { margin: 0 0 8px; }
+.cadlabs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #9aa08f;
+  text-decoration: none;
+  font-size: 12px;
+  opacity: 0.8;
+}
+.cadlabs-badge img { height: 18px; width: auto; }
+
+.status-card, .details-form, .question-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 20px;
+  margin-top: 16px;
+}
+
+.status-card h1 { color: var(--cee-green); font-size: 22px; margin-top: 0; }
+
+.details-form { display: flex; flex-direction: column; gap: 16px; }
+.details-form label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 15px; }
+.details-form input, .details-form select {
+  font-size: 16px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+}
+.field-error { color: var(--wrong); font-size: 13px; font-weight: 400; }
+
+.btn-primary, .btn-secondary {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+.btn-primary { background: var(--cee-green); color: #fff; }
+.btn-secondary { background: var(--cee-yellow); color: var(--text); }
+
+.not-you-link { display: block; margin-top: 16px; text-align: center; color: var(--cee-green); }
+
+.quiz-header-bar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--cee-green);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.timer { font-size: 18px; letter-spacing: 1px; }
+.timer.timer-warning { color: #FFD166; }
+
+.question-text { font-size: 19px; font-weight: 600; margin: 0 0 20px; }
+
+.options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  text-align: left;
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 16px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.option-label {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.option-btn.option-selected { border-color: var(--cee-green); background: #EEF6F0; }
+.option-btn.option-correct { border-color: var(--correct); background: #E8F5EA; }
+.option-btn.option-wrong { border-color: var(--wrong); background: #FBEAE8; }
+.option-btn:disabled { cursor: default; opacity: 0.9; }
+
+.nav-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.nav-row .btn-secondary, .nav-row .btn-primary { flex: 1 1 auto; }
+
+@media (max-width: 420px) {
+  .site-main { padding: 12px; }
+  .question-text { font-size: 17px; }
+}

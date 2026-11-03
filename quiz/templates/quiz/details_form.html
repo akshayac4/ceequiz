@@ -1,0 +1,40 @@
+{% extends "quiz/base.html" %}
+{% block content %}
+<form method="post" action="{% url 'quiz:start_attempt' code=quiz.code %}" class="details-form">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<p class="error">{{ form.non_field_errors }}</p>{% endif %}
+
+  <label>
+    {% if LANG == 'en' %}Your name{% else %}તમારું નામ{% endif %}
+    {{ form.name }}
+    {% if form.name.errors %}<span class="field-error">{{ form.name.errors|join:" " }}</span>{% endif %}
+  </label>
+
+  <label>
+    {% if LANG == 'en' %}District{% else %}જિલ્લો{% endif %}
+    {{ form.district }}
+    {% if form.district.errors %}<span class="field-error">{{ form.district.errors|join:" " }}</span>{% endif %}
+  </label>
+
+  <label>
+    {% if LANG == 'en' %}Mobile number{% else %}મોબાઇલ નંબર{% endif %}
+    {{ form.mobile }}
+    {% if form.mobile.errors %}<span class="field-error">{{ form.mobile.errors|join:" " }}</span>{% endif %}
+  </label>
+
+  <label>
+    {% if LANG == 'en' %}School name{% else %}શાળાનું નામ{% endif %}
+    {{ form.school_name }}
+    {% if form.school_name.errors %}<span class="field-error">{{ form.school_name.errors|join:" " }}</span>{% endif %}
+  </label>
+
+  <label>
+    {% if LANG == 'en' %}Designation{% else %}હોદ્દો (Designation){% endif %}
+    {{ form.designation }}
+  </label>
+
+  <button type="submit" class="btn-primary">
+    {% if LANG == 'en' %}Start{% else %}શરૂ કરો{% endif %}
+  </button>
+</form>
+{% endblock %}

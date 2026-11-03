@@ -1,0 +1,12 @@
+{% extends "quiz/base.html" %}
+{% block content %}
+<div class="status-card">
+  {% if LANG == 'en' %}
+    <h1>Your response is recorded</h1>
+    <p>Thank you for taking the test.</p>
+  {% else %}
+    <h1>તમારો પ્રતિસાદ નોંધાયો છે</h1>
+    <p>કસોટી આપવા બદલ આભાર.</p>
+  {% endif %}
+</div>
+{% endblock %}

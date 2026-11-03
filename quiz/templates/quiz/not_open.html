@@ -1,0 +1,12 @@
+{% extends "quiz/base.html" %}
+{% block content %}
+<div class="status-card">
+  {% if LANG == 'en' %}
+    <h1>Not available yet</h1>
+    <p>This test has not been opened yet. Please check back later.</p>
+  {% else %}
+    <h1>હજુ ઉપલબ્ધ નથી</h1>
+    <p>આ કસોટી હજુ શરૂ કરવામાં આવી નથી. કૃપા કરી પછીથી ફરી જુઓ.</p>
+  {% endif %}
+</div>
+{% endblock %}

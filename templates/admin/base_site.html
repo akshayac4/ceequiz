@@ -1,0 +1,16 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block branding %}
+<div style="display:flex;align-items:center;gap:10px;">
+  <img src="{% static 'brand/cadlabs-icon.png' %}" alt="CAD Labs" style="height:28px;width:auto;">
+  <span style="font-weight:600;">CAD Labs Technology &middot; {{ site_header|default:"CEE Quiz — Admin" }}</span>
+</div>
+{% endblock %}
+
+{% block footer %}
+{{ block.super }}
+<div id="cadlabs-footer" style="text-align:center;padding:10px;font-size:12px;color:#777;">
+  Made by CAD Labs Technology LLP
+</div>
+{% endblock %}
