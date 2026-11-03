@@ -13,12 +13,15 @@ Requires Docker Desktop.
 
 ```bash
 cp .env.example .env
-docker compose up -d
+make up   # docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ```
 
-`docker-compose.override.yml` is picked up automatically in dev: it runs `manage.py runserver`
-with `DEBUG=1`, mounts the source tree for live reload, and binds Postgres to
-`127.0.0.1:5432` so you can connect a GUI client. The app is at http://localhost:8000.
+`docker-compose.dev.yml` is the local-dev overlay: it runs `manage.py runserver` with
+`DEBUG=1`, mounts the source tree for live reload, and binds Postgres to `127.0.0.1:5432` so
+you can connect a GUI client. **It is not loaded automatically** — Docker Compose only
+auto-loads a file named `docker-compose.override.yml`, and this one is deliberately named
+differently so a bare `docker compose up` (as used in production and in `deploy.sh`) never
+picks it up by accident. The app is at http://localhost:8000.
 
 > **Note:** On macOS, Docker Desktop's file-sharing layer occasionally misses a change to a
 > template or static file (the dev server's autoreloader watches `.py` files reliably but can

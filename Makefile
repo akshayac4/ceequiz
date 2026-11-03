@@ -1,13 +1,15 @@
 .PHONY: up down build logs migrate makemigrations test seed shell createsuperuser collectstatic
 
+DEV = -f docker-compose.yml -f docker-compose.dev.yml
+
 up:
-	docker compose up -d
+	docker compose $(DEV) up -d
 
 down:
-	docker compose down
+	docker compose $(DEV) down
 
 build:
-	docker compose build
+	docker compose $(DEV) build
 
 logs:
 	docker compose logs -f web
