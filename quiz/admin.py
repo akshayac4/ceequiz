@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 from django.urls import path, reverse
 from django.utils.html import format_html
 
-from .models import Answer, Attempt, District, Option, Participant, Question, Quiz, School
+from .models import Answer, Attempt, District, Option, Participant, Question, Quiz, School, generate_quiz_code
 
 admin.site.site_header = "CEE Quiz — Admin"
 admin.site.site_title = "CEE Quiz Admin"
@@ -75,16 +75,16 @@ class QuestionReadonlyInline(admin.TabularInline):
 
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
-    list_display = ["title_en", "code", "status", "audience", "duration_minutes", "created_at", "quiz_link"]
-    list_filter = ["status", "audience"]
-    readonly_fields = ["code", "status_actions", "quiz_link", "monitor_box", "bulk_upload_box"]
+    list_display = ["title_en", "district", "code", "status", "audience", "duration_minutes", "created_at", "quiz_link"]
+    list_filter = ["status", "audience", "district"]
+    readonly_fields = ["code", "status_actions", "quiz_link", "monitor_box", "bulk_upload_box", "duplicate_box"]
     inlines = [QuestionReadonlyInline]
     actions = ["duplicate_quiz"]
     fields = [
-        "title_gu", "title_en", "code", "event_name", "audience",
+        "title_gu", "title_en", "code", "event_name", "district", "audience",
         "duration_minutes", "phase_closes_at",
         "instructions_gu", "instructions_en",
-        "status_actions", "quiz_link", "monitor_box", "bulk_upload_box",
+        "status_actions", "quiz_link", "monitor_box", "bulk_upload_box", "duplicate_box",
     ]
 
     def bulk_upload_box(self, obj):
@@ -98,6 +98,18 @@ class QuizAdmin(admin.ModelAdmin):
             template_url, upload_url,
         )
     bulk_upload_box.short_description = "Bulk question upload"
+
+    def duplicate_box(self, obj):
+        if not obj.pk:
+            return "Save the quiz first."
+        url = reverse("admin:quiz_quiz_duplicate", args=[obj.pk])
+        return format_html(
+            '<a class="button" href="{}">Duplicate this quiz</a> '
+            '<span style="color:#666">Copies all questions and options as a new draft — '
+            'pick a different district (and title) on the copy, no retyping needed.</span>',
+            url,
+        )
+    duplicate_box.short_description = "Reuse for another district"
 
     def quiz_link(self, obj):
         if not obj.pk:
@@ -167,8 +179,18 @@ class QuizAdmin(admin.ModelAdmin):
             path("<int:pk>/monitor.json", self.admin_site.admin_view(self.monitor_view), name="quiz_quiz_monitor"),
             path("<int:pk>/upload-questions/", self.admin_site.admin_view(self.upload_questions_view), name="quiz_quiz_upload_questions"),
             path("question-template.xlsx", self.admin_site.admin_view(self.template_view), name="quiz_quiz_question_template"),
+            path("<int:pk>/duplicate/", self.admin_site.admin_view(self.duplicate_view), name="quiz_quiz_duplicate"),
         ]
         return custom + urls
+
+    def duplicate_view(self, request, pk):
+        quiz = self.get_object(request, pk)
+        if quiz is None:
+            messages.error(request, "Quiz not found.")
+            return redirect("admin:quiz_quiz_changelist")
+        new_quiz = self._duplicate(quiz)
+        messages.success(request, f"Duplicated as a new draft. Pick the district and tweak the title below.")
+        return redirect("admin:quiz_quiz_change", new_quiz.pk)
 
     def transition_view(self, request, pk, action):
         quiz = self.get_object(request, pk)
@@ -290,24 +312,28 @@ class QuizAdmin(admin.ModelAdmin):
 
         return render(request, "admin/quiz/upload_questions.html", {"quiz": quiz})
 
+    def _duplicate(self, quiz):
+        questions = list(quiz.questions.prefetch_related("options"))
+        quiz.pk = None
+        quiz.code = generate_quiz_code()
+        quiz.status = Quiz.STATUS_DRAFT
+        quiz.title_en = f"{quiz.title_en} (copy)"
+        quiz.title_gu = f"{quiz.title_gu} (copy)"
+        quiz.save()
+        for q in questions:
+            options = list(q.options.all())
+            q.pk = None
+            q.quiz = quiz
+            q.save()
+            for opt in options:
+                opt.pk = None
+                opt.question = q
+                opt.save()
+        return quiz
+
     def duplicate_quiz(self, request, queryset):
         for quiz in queryset:
-            questions = list(quiz.questions.prefetch_related("options"))
-            quiz.pk = None
-            quiz.code = None
-            quiz.status = Quiz.STATUS_DRAFT
-            quiz.title_en = f"{quiz.title_en} (copy)"
-            quiz.title_gu = f"{quiz.title_gu} (copy)"
-            quiz.save()
-            for q in questions:
-                options = list(q.options.all())
-                q.pk = None
-                q.quiz = quiz
-                q.save()
-                for opt in options:
-                    opt.pk = None
-                    opt.question = q
-                    opt.save()
+            self._duplicate(quiz)
         messages.success(request, "Quiz duplicated as a new draft.")
     duplicate_quiz.short_description = "Duplicate selected quiz"
 

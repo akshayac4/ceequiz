@@ -63,6 +63,11 @@ class Quiz(models.Model):
     title_en = models.CharField(max_length=255)
     code = models.CharField(max_length=8, unique=True, default=generate_quiz_code, editable=False)
     event_name = models.CharField(max_length=255, blank=True)
+    district = models.ForeignKey(
+        District, on_delete=models.SET_NULL, null=True, blank=True,
+        help_text="Which district this quiz run is for. Use 'Duplicate quiz' to reuse the same "
+                   "questions for another district without retyping them.",
+    )
     audience = models.CharField(max_length=10, choices=AUDIENCE_CHOICES, default=AUDIENCE_TEACHER)
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default=STATUS_DRAFT)
     duration_minutes = models.PositiveIntegerField(null=True, blank=True, help_text="Blank = untimed")
