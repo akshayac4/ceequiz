@@ -93,8 +93,10 @@ class QuizAdmin(admin.ModelAdmin):
         template_url = reverse("admin:quiz_quiz_question_template")
         upload_url = reverse("admin:quiz_quiz_upload_questions", args=[obj.pk])
         return format_html(
-            '<a class="button" href="{}">Download Excel template</a> '
-            '<a class="button" href="{}">Upload questions</a>',
+            '<a class="btn btn-outline-primary btn-sm me-2" href="{}">'
+            '<i class="fas fa-file-excel me-1"></i>Download Excel template</a>'
+            '<a class="btn btn-primary btn-sm" href="{}">'
+            '<i class="fas fa-upload me-1"></i>Upload questions</a>',
             template_url, upload_url,
         )
     bulk_upload_box.short_description = "Bulk question upload"
@@ -104,8 +106,9 @@ class QuizAdmin(admin.ModelAdmin):
             return "Save the quiz first."
         url = reverse("admin:quiz_quiz_duplicate", args=[obj.pk])
         return format_html(
-            '<a class="button" href="{}">Duplicate this quiz</a> '
-            '<span style="color:#666">Copies all questions and options as a new draft — '
+            '<a class="btn btn-outline-success btn-sm me-2" href="{}">'
+            '<i class="fas fa-copy me-1"></i>Duplicate this quiz</a>'
+            '<span class="text-muted">Copies all questions and options as a new draft — '
             'pick a different district (and title) on the copy, no retyping needed.</span>',
             url,
         )
@@ -117,13 +120,15 @@ class QuizAdmin(admin.ModelAdmin):
         from django.conf import settings
         url = f"{settings.SITE_URL.rstrip('/')}/q/{obj.code}/"
         return format_html(
+            '<div class="input-group" style="max-width:480px">'
             '<input type="text" readonly value="{0}" id="quiz-public-link" '
-            'style="width:360px;padding:6px;font-family:monospace;" '
-            'onclick="this.select()">'
-            '<button type="button" class="button" style="margin-left:8px" '
+            'class="form-control form-control-sm" onclick="this.select()">'
+            '<button type="button" class="btn btn-success btn-sm" '
             'onclick="navigator.clipboard.writeText(\'{0}\');'
-            'this.textContent=\'Copied!\';setTimeout(()=>this.textContent=\'Copy link\',1500);">'
-            'Copy link</button>',
+            'this.innerHTML=\'<i class=&quot;fas fa-check&quot;></i> Copied!\';'
+            'setTimeout(()=>this.innerHTML=\'<i class=&quot;fas fa-copy&quot;></i> Copy link\',1500);">'
+            '<i class="fas fa-copy"></i> Copy link</button>'
+            '</div>',
             url,
         )
     quiz_link.short_description = "Public link (same link for pre and post test)"
@@ -140,17 +145,29 @@ class QuizAdmin(admin.ModelAdmin):
             buttons.append(("open_post", "Open post-test"))
         if obj.can_close():
             buttons.append(("close", "Close quiz"))
+        status_badges = {
+            Quiz.STATUS_DRAFT: "bg-info",
+            Quiz.STATUS_PRE_OPEN: "bg-success",
+            Quiz.STATUS_PRE_CLOSED: "bg-warning text-dark",
+            Quiz.STATUS_POST_OPEN: "bg-success",
+            Quiz.STATUS_CLOSED: "bg-dark",
+        }
         if obj.questions_missing_correct_option():
-            warn = '<p style="color:#B3261E">Every question needs a correct option ticked before opening.</p>'
+            warn = (
+                '<div class="alert alert-warning py-1 px-2 mb-2 d-inline-block">'
+                '<i class="fas fa-exclamation-triangle me-1"></i>'
+                "Every question needs a correct option ticked before opening.</div><br>"
+            )
         else:
             warn = ""
-        html = f'<p><strong>Current status:</strong> {obj.get_status_display()}</p>' + warn
+        html = (
+            f'<p><strong>Current status:</strong> '
+            f'<span class="badge {status_badges.get(obj.status, "bg-info")}">{obj.get_status_display()}</span></p>'
+            + warn
+        )
         for action, label in buttons:
             url = reverse("admin:quiz_quiz_transition", args=[obj.pk, action])
-            html += (
-                f'<a class="button" style="margin-right:8px" '
-                f'href="{url}">{label}</a>'
-            )
+            html += f'<a class="btn btn-success btn-sm me-2" href="{url}">{label}</a>'
         return format_html(html)
     status_actions.short_description = "Lifecycle"
 
@@ -164,7 +181,9 @@ class QuizAdmin(admin.ModelAdmin):
             'function refreshMonitor(){{'
             'fetch("{}").then(r=>r.json()).then(d=>{{'
             'document.getElementById("live-monitor").innerHTML='
-            '"Joined: "+d.joined+" &middot; In progress: "+d.in_progress+" &middot; Submitted: "+d.submitted;'
+            '"<span class=\\"badge bg-info me-2\\">Joined: "+d.joined+"</span>"+'
+            '"<span class=\\"badge bg-warning text-dark me-2\\">In progress: "+d.in_progress+"</span>"+'
+            '"<span class=\\"badge bg-success\\">Submitted: "+d.submitted+"</span>";'
             '}});}}'
             'refreshMonitor();setInterval(refreshMonitor,10000);'
             '</script>',
@@ -249,6 +268,10 @@ class QuizAdmin(admin.ModelAdmin):
         response["Content-Disposition"] = 'attachment; filename="ceequiz_question_template.xlsx"'
         return response
 
+    def _upload_context(self, request, quiz):
+        context = {**self.admin_site.each_context(request), "quiz": quiz, "title": f"Upload questions — {quiz}"}
+        return context
+
     def upload_questions_view(self, request, pk):
         quiz = self.get_object(request, pk)
         if quiz is None:
@@ -291,7 +314,7 @@ class QuizAdmin(admin.ModelAdmin):
             if errors:
                 for e in errors:
                     messages.error(request, e)
-                return render(request, "admin/quiz/upload_questions.html", {"quiz": quiz})
+                return render(request, "admin/quiz/upload_questions.html", self._upload_context(request, quiz))
 
             for record in rows:
                 question, _ = Question.objects.update_or_create(
@@ -310,7 +333,7 @@ class QuizAdmin(admin.ModelAdmin):
             messages.success(request, f"Imported {len(rows)} question(s).")
             return redirect("admin:quiz_quiz_change", pk)
 
-        return render(request, "admin/quiz/upload_questions.html", {"quiz": quiz})
+        return render(request, "admin/quiz/upload_questions.html", self._upload_context(request, quiz))
 
     def _duplicate(self, quiz):
         questions = list(quiz.questions.prefetch_related("options"))

@@ -1,10 +1,14 @@
 {% extends "admin/base_site.html" %}
 {% block content %}
-<h1>Upload questions — {{ quiz }}</h1>
-<p>Columns required: order, question_gu, question_en, A_gu, A_en, B_gu, B_en, C_gu, C_en, D_gu, D_en, correct (A/B/C/D).</p>
-<form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  <input type="file" name="file" accept=".xlsx" required>
-  <button type="submit" class="button default">Upload</button>
-</form>
+<h1 class="h4 mb-3">{{ title }}</h1>
+<div class="card card-success card-outline">
+  <div class="card-body">
+    <p class="text-muted">Columns required: order, question_gu, question_en, A_gu, A_en, B_gu, B_en, C_gu, C_en, D_gu, D_en, correct (A/B/C/D).</p>
+    <form method="post" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+      {% csrf_token %}
+      <input type="file" name="file" accept=".xlsx" required class="form-control" style="max-width:320px">
+      <button type="submit" class="btn btn-success"><i class="fas fa-upload me-1"></i>Upload</button>
+    </form>
+  </div>
+</div>
 {% endblock %}

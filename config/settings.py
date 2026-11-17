@@ -17,6 +17,7 @@ CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get("CSRF_TRUSTED_ORIGINS"
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000" if DEBUG else "https://ceequiz.thecadlabs.com")
 
 INSTALLED_APPS = [
+    "jazzmin",  # must come before django.contrib.admin so its templates win
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -116,6 +117,7 @@ WHITENOISE_MANIFEST_STRICT = False
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "admin:login"
+LOGIN_REDIRECT_URL = "admin:index"
 
 # Security
 if not DEBUG:
@@ -137,4 +139,68 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {"console": {"class": "logging.StreamHandler"}},
     "root": {"handlers": ["console"], "level": "INFO"},
+}
+
+# Admin theme (django-jazzmin). CAD Labs branding lives here instead of a
+# hand-rolled admin/base_site.html override, since that's the supported way
+# to customise Jazzmin's chrome — a raw template override fights its layout.
+JAZZMIN_SETTINGS = {
+    "site_title": "CEE Quiz Admin",
+    "site_header": "CEE Quiz",
+    "site_brand": "CAD Labs Technology",
+    "site_logo": "brand/cadlabs-icon.png",
+    "login_logo": "brand/cadlabs-icon.png",
+    "site_logo_classes": "img-circle",
+    "site_icon": "brand/cadlabs-icon.png",
+    "welcome_sign": "CEE Quiz — sign in to manage pre/post tests",
+    "copyright": "Made by CAD Labs Technology LLP",
+    "search_model": ["quiz.Quiz", "quiz.Participant"],
+    "show_ui_builder": False,
+    "navigation_expanded": True,
+    "order_with_respect_to": [
+        "quiz", "quiz.Quiz", "quiz.Question", "quiz.District", "quiz.School",
+        "quiz.Participant", "quiz.Attempt", "quiz.Answer", "auth", "axes",
+    ],
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "quiz.Quiz": "fas fa-poll-h",
+        "quiz.Question": "fas fa-question-circle",
+        "quiz.Option": "fas fa-list-ul",
+        "quiz.District": "fas fa-map-marker-alt",
+        "quiz.School": "fas fa-school",
+        "quiz.Participant": "fas fa-user-graduate",
+        "quiz.Attempt": "fas fa-tasks",
+        "quiz.Answer": "fas fa-check-square",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    "custom_css": "css/admin-custom.css",
+    "show_sidebar": True,
+    "changeform_format": "horizontal_tabs",
+    "language_chooser": False,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    # "flatly" (and most bootswatch themes) @import a Google Font over the
+    # CDN on every admin page load — "default" is the same Bootstrap 5 +
+    # AdminLTE look with no external font request.
+    "theme": "default",
+    "dark_mode_theme": None,
+    "navbar": "navbar-dark",
+    "navbar_fixed": True,
+    "brand_colour": "navbar-success",
+    "accent": "accent-success",
+    "sidebar": "sidebar-dark-success",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "button_classes": {
+        "primary": "btn-success",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success",
+    },
 }

@@ -1,0 +1,35 @@
+/* Small polish on top of Jazzmin's theme for ceequiz's custom admin boxes. */
+
+.field-status_actions .badge,
+.field-monitor_box .badge {
+  font-size: 0.85em;
+}
+
+.field-bulk_upload_box .text-muted,
+.field-duplicate_box .text-muted {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85em;
+}
+
+#live-monitor {
+  padding: 4px 0;
+}
+
+#quiz-public-link {
+  font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+}
+
+/* Defensive sizing: our logo files aren't pre-cropped to the small square
+   AdminLTE expects, so constrain them explicitly rather than relying on
+   them rendering at native resolution. */
+.login-logo img {
+  max-height: 90px;
+  width: auto;
+}
+.brand-image,
+.brand-image-xl {
+  max-height: 32px !important;
+  width: auto !important;
+  object-fit: contain;
+}
